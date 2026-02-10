@@ -1,207 +1,193 @@
-// prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
-model User {
-  id        String   @id
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("users")
-}
-
-model Workspace {
-  id        String     @id @default(cuid())
-  name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  books     Book[]
-  series    Series[]
-  episodes  Episode[]
-
-  @@map("workspaces")
-}
-
-model Book {
-  id               String   @id @default(cuid())
-  title            String
-  author           String
-  language         String   @default("en")
-  genre            String
-  contentText      String   @db.Text
-  wordCount        Int
-  estimatedPages   Int
-  workspaceId      String
-  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  series           Series[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@index([workspaceId])
-  @@map("books")
-}
-
-model Series {
-  id               String     @id @default(cuid())
-  bookId           String
-  book             Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  workspaceId      String
-  workspace        Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  title            String
-  description      String?    @db.Text
-  episodeCount     Int        @default(0)
-  status           SeriesStatus @default(GENERATING)
-  episodes         Episode[]
-  dramaSkeleton    DramaSkeleton?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-
-  @@index([bookId])
-  @@index([workspaceId])
-  @@map("series")
-}
-
-model DramaSkeleton {
-  id          String   @id @default(cuid())
-  seriesId    String   @unique
-  series      Series   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
-  beats       Beat[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("drama_skeletons")
-}
-
-model Beat {
-  id               String   @id @default(cuid())
-  dramaSkeleton    DramaSkeleton @relation(fields: [dramaSkeleton_id], references: [id], onDelete: Cascade)
-  dramaSkeleton_id String
-  arcNumber        Int
-  beatType         BeatType
-  description      String   @db.Text
-  narrativeNote    String?  @db.Text
-  episodeStart     Int
-  episodeEnd       Int
-
-  @@map("beats")
-}
-
-model Episode {
-  id                    String         @id @default(cuid())
-  seriesId              String
-  series                Series         @relation(fields: [seriesId], references: [id], onDelete: Cascade)
-  workspaceId           String
-  workspace             Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  episodeNumber         Int
-  title                 String
-  scriptText            String         @db.Text
-  durationTargetSec     Int            @default(75) // 60-90 seconds
-  estimatedReadTimeSec  Int
-  characterCount        Int
-  hasCliffhanger        Boolean        @default(false)
-  narratorRatioPct      Int            @default(0)
-  dialogueRatioPct      Int            @default(0)
-  status                EpisodeStatus  @default(GENERATING)
-  validationErrors      String[]       @default([])
-  validationWarnings    String[]       @default([])
-  scenes                Scene[]
-  promptTrace           PromptTrace?
-  generationStats       GenerationStats?
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
-
-  @@unique([seriesId, episodeNumber])
-  @@index([seriesId])
-  @@index([workspaceId])
-  @@map("episodes")
-}
-
-model Scene {
-  id            String   @id @default(cuid())
-  episodeId     String
-  episode       Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  sceneNumber   Int
-  title         String
-  narration      String   @db.Text
-  dialogue      String?  @db.Text
-  characters    String[]
-  sfxNotes      String?
-  durationSec   Int
-  createdAt     DateTime @default(now())
-
-  @@index([episodeId])
-  @@map("scenes")
-}
-
-model PromptTrace {
-  id                String   @id @default(cuid())
-  episodeId         String   @unique
-  episode           Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  model             String   // "gpt-4", "claude-3", etc.
-  promptTemplate    String   @db.Text
-  promptFull        String   @db.Text
-  responseText      String?  @db.Text
-  estimatedTokens   Int      @default(0)
-  costUsd           Float    @default(0.0)
-  generationTimeMs  Int
-  createdAt         DateTime @default(now())
-
-  @@map("prompt_traces")
-}
-
-model GenerationStats {
-  id                    String   @id @default(cuid())
-  episodeId             String   @unique
-  episode               Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  wordCount             Int
-  sentenceCount         Int
-  uniqueCharacterCount  Int
-  narratorWordCount     Int
-  dialogueWordCount     Int
-  avgWordsPerSentence   Float
-  readabilityScore      Float
-
-  @@map("generation_stats")
-}
-
-// schema.prisma
-
-
-
-model DocumentChunk {
-  id         Int                 @id @default(autoincrement())
-  content    String
-  pageNumber Int                 @map("page_number") // Dimensions for gemini-embedding-001
-  embedding  Unsupported("vector(3072)") 
-
-  @@map("document_chunks")
-}
-
-enum SeriesStatus {
-  GENERATING
-  READY
-  COMPLETED
-  FAILED
+datasource db {
+  provider = "postgresql"
 }
 
 enum EpisodeStatus {
   GENERATING
-  VALIDATION_FAILED
   READY
-  ARCHIVED
+  VALIDATION_FAILED
 }
 
-enum BeatType {
-  HOOK
-  ESCALATION
-  TENSION
-  REVELATION
-  CLIFFHANGER
+enum SeriesStatus {
+  DRAFT
+  GENERATING
+  ACTIVE
+  FAILED
+}
+
+enum AiCallType {
+  ANALYSIS
+  SKELETON
+  EPISODE_GENERATION
+  VALIDATION
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Workspace {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  users     WorkspaceUser[]
+  books     Book[]
+  series    Series[]
+  aiCalls   AiCallTrace[]
+}
+model WorkspaceUser {
+  id          String         @id @default(uuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([workspaceId, userId])
+}
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  workspaces WorkspaceUser[]
+}
+model Book {
+  id          String   @id @default(uuid())
+  workspaceId String
+
+  title       String
+  author      String?
+  language    String
+  genre       String?
+
+  contentText String   // FULL BOOK TEXT (post-S3 ingestion)
+
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  analysis  BookAnalysis?
+  series    Series[]
+}
+model BookAnalysis {
+  id        String @id @default(uuid())
+  bookId    String @unique
+
+  summary              String
+  totalWordCount       Int
+  estimatedReadTimeSec Int
+
+  extractedCharacters  Json   // [{ name, frequency }]
+  structuralSegments   Json   // chapters / logical splits
+
+  createdAt DateTime @default(now())
+
+  book Book @relation(fields: [bookId], references: [id])
+}
+model Series {
+  id          String @id @default(uuid())
+  workspaceId String
+  bookId      String
+
+  title       String
+  status      SeriesStatus
+  totalEpisodes Int
+
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  book      Book      @relation(fields: [bookId], references: [id])
+
+  arcs      SeriesArc[]
+  episodes  Episode[]
+}
+model SeriesArc {
+  id        String @id @default(uuid())
+  seriesId String
+
+  arcNumber Int
+  beatHook        String
+  beatEscalation  String
+  beatTension     String
+  beatRevelation  String
+  beatCliffhanger String
+
+  createdAt DateTime @default(now())
+
+  series Series @relation(fields: [seriesId], references: [id])
+
+  @@unique([seriesId, arcNumber])
+}
+model Episode {
+  id        String @id @default(uuid())
+  seriesId String
+  arcId    String?
+
+  episodeNumber Int
+  title         String
+
+  scriptText    String
+
+  durationTargetSec     Int
+  estimatedReadTimeSec  Int
+  characterCount        Int
+  dialogueRatio         Float
+  hasCliffhanger        Boolean
+
+  status EpisodeStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  series Series     @relation(fields: [seriesId], references: [id])
+  // arc    SeriesArc? @relation(fields: [arcId], references: [id])
+
+  // scenes      Scene[]
+  validations EpisodeValidation[]
+}
+model EpisodeValidation {
+  id        String @id @default(uuid())
+  episodeId String
+
+  isValid   Boolean
+  errors    Json
+  warnings  Json
+
+  createdAt DateTime @default(now())
+
+  episode Episode @relation(fields: [episodeId], references: [id])
+}
+model AiCallTrace {
+  id          String @id @default(uuid())
+  workspaceId String
+
+  callType    AiCallType
+  modelName   String
+
+  prompt      String   // truncated if needed
+  tokenEstimate Int
+
+  relatedBookId    String?
+  relatedSeriesId  String?
+  relatedEpisodeId String?
+
+  createdAt DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
 }

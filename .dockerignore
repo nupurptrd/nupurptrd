@@ -1,0 +1,62 @@
+# Dockerignore for Smarton Backend
+# Reduces build context size and speeds up builds
+
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+
+# Testing
+coverage
+.nyc_output
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.docker
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+test
+*.spec.ts
+*.e2e-spec.ts
+jest.config.js
+jest-e2e.json
+
+# Firebase credentials (should be mounted as secret)
+*firebase*.json
+
+# Uploads (should be mounted as volume)
+uploads/*
+!uploads/.gitkeep
+
+# Misc
+.eslintcache
+*.tgz

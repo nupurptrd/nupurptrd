@@ -1,0 +1,4 @@
+# Pre-commit hook for Smarton Backend
+# Runs lint-staged for code quality checks
+
+npx lint-staged
