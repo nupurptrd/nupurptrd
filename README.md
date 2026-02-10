@@ -22,7 +22,11 @@ A robust NestJS backend for the Echosphere/Smarton audio content platform, provi
 ## 🛠 Tech Stack
 
 - **Framework**: NestJS 11
+<<<<<<< HEAD
 - **Database**: PostgreSQL with TypeORM
+=======
+- **Database**: PostgreSQL with Prisma
+>>>>>>> 293ae127fd566b301006bf862f6d13de7f586807
 - **Cache/Queue**: Redis with Bull
 - **Authentication**: Passport JWT
 - **Validation**: class-validator, class-transformer
@@ -62,7 +66,14 @@ Edit `.env` with your database, Redis, and API credentials (see `.env.example` f
 docker-compose up postgres redis -d
 
 # Run database migrations
+<<<<<<< HEAD
 npm run typeorm:run
+=======
+npm run prisma:migrate
+
+# Generate Prisma client (after schema changes)
+npm run prisma:generate
+>>>>>>> 293ae127fd566b301006bf862f6d13de7f586807
 
 # Start development server
 npm run start:dev
@@ -84,6 +95,12 @@ Swagger docs at [http://localhost:3001/api/docs](http://localhost:3001/api/docs)
 | `npm run lint` | Run ESLint |
 | `npm run format` | Format code with Prettier |
 | `npm run seed:admin` | Seed initial admin user |
+<<<<<<< HEAD
+=======
+| `npm run prisma:migrate` | Run Prisma migrations |
+| `npm run prisma:generate` | Generate Prisma client |
+| `npm run prisma:studio` | Open Prisma Studio |
+>>>>>>> 293ae127fd566b301006bf862f6d13de7f586807
 
 ## 🏗 Project Structure
 
@@ -97,8 +114,12 @@ src/
 │   ├── filters/         # Exception filters
 │   └── middleware/      # Request middleware
 ├── config/              # Configuration
+<<<<<<< HEAD
 ├── entities/            # TypeORM entities (25+)
 ├── migrations/          # Database migrations
+=======
+├── prisma/              # Prisma schema and migrations
+>>>>>>> 293ae127fd566b301006bf862f6d13de7f586807
 ├── modules/             # Feature modules
 │   ├── ai/              # AI generation (Gemini)
 │   ├── auth/            # JWT authentication
